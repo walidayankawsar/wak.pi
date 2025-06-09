@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Home Media Server</title>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --accent-color: #f72585;
+            --dark-color: #0c0f1a;
+            --light-color: #f8f9fa;
+            --card-bg: #1a1a2e;
+            --card-hover: #16213e;
+            --text-primary: #e2e2e2;
+            --text-secondary: #b8b8b8;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(67, 97, 238, 0.3);
+            animation: fadeIn 0.8s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            animation: float 8s infinite linear;
+        }
+        
+        header h1 {
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            position: relative;
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+        }
+        
+        .search-bar {
+            display: flex;
+            margin: 30px 0;
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 12px 0 0 12px;
+            font-size: 1rem;
+            background-color: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .search-bar input:focus {
+            outline: none;
+            background-color: rgba(255,255,255,0.15);
+            box-shadow: 0 0 0 2px var(--accent-color);
+        }
+        
+        .search-bar input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .search-bar button {
+            padding: 0 25px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 0 12px 12px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        
+        .search-bar button:hover {
+            background-color: #e5177e;
+        }
+        
+        .media-nav {
+            display: flex;
+            background-color: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            animation: fadeIn 0.8s ease-out 0.3s both;
+        }
+        
+        .media-nav a {
+            padding: 18px 25px;
+            color: var(--text-primary);
+            text-decoration: none;
+            text-align: center;
+            flex: 1;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .media-nav a:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .media-nav a.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .media-nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 3px;
+            background-color: white;
+            border-radius: 3px 3px 0 0;
+        }
+        
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .media-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            cursor: pointer;
+            position: relative;
+            animation: fadeIn 0.8s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        .media-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+            background-color: var(--card-hover);
+        }
+        
+        .media-card:nth-child(1) { animation-delay: 0.4s; }
+        .media-card:nth-child(2) { animation-delay: 0.5s; }
+        .media-card:nth-child(3) { animation-delay: 0.6s; }
+        .media-card:nth-child(4) { animation-delay: 0.7s; }
+        .media-card:nth-child(5) { animation-delay: 0.8s; }
+        
+        .media-poster {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .media-card:hover .media-poster {
+            transform: scale(1.05);
+        }
+        
+        .media-info {
+            padding: 18px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .media-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 1.05rem;
+        }
+        
+        .media-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .media-rating {
+            color: #ffd700;
+            font-weight: 500;
+        }
+        
+        .media-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            z-index: 0;
+        }
+        
+        .now-playing {
+            background: linear-gradient(to right, #3a0ca3, #4361ee);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.8s ease-out 0.3s both;
+        }
+        
+        .now-playing::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            animation: float 12s infinite linear reverse;
+        }
+        
+        .now-playing-poster {
+            width: 180px;
+            height: 270px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            transition: transform 0.5s ease;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .now-playing:hover .now-playing-poster {
+            transform: rotate(2deg) scale(1.03);
+        }
+        
+        .now-playing-info {
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .now-playing-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .now-playing-meta {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .now-playing-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .now-playing-description {
+            margin-bottom: 25px;
+            line-height: 1.7;
+            max-width: 700px;
+        }
+        
+        .player-controls {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .player-controls button {
+            padding: 12px 25px;
+            background-color: rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        
+        .player-controls button:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .player-controls .play-btn {
+            background-color: var(--accent-color);
+            padding: 12px 30px;
+        }
+        
+        .player-controls .play-btn:hover {
+            background-color: #e5177e;
+            transform: translateY(-2px);
+        }
+        
+        .categories {
+            margin-bottom: 40px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .category-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+            display: inline-block;
+            font-weight: 600;
+        }
+        
+        .progress-bar {
+            height: 4px;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 65%;
+            border-radius: 2px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            background-color: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            margin-top: 50px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @media (max-width: 1024px) {
+            .media-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            }
+            
+            .now-playing {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .player-controls {
+                justify-content: center;
+            }
+            
+            .now-playing-poster {
+                width: 150px;
+                height: 225px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .media-nav {
+                flex-wrap: wrap;
+            }
+            
+            .media-nav a {
+                flex: 1 0 33%;
+                padding: 15px;
+                font-size: 0.9rem;
+            }
+            
+            .media-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+            }
+            
+            .now-playing-title {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* Loading animation */
+        .skeleton {
+            animation: skeleton-loading 1.5s infinite ease-in-out;
+            background-color: rgba(255,255,255,0.1);
+            background-image: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.1), rgba(255,255,255,0));
+            background-size: 200% 100%;
+        }
+        
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-film"></i> WAK.pi </h1>
+            <p><b>Free </b>Streaming paradise with 1,247 serise and 358 TV shows & more...</p>
+        </header>
+        
+        <div class="search-bar">
+            <input type="text" placeholder="Search movies, TV shows...">
+            <button><i class="fas fa-search"></i> Search</button>
+        </div>
+        
+        <div class="media-nav">
+            <a href="#" class="active"><i class="fas fa-home"></i> Home</a>
+            <a href="#"><i class="fas fa-film"></i> Movies</a>
+            <a href="#"><i class="fas fa-tv"></i> TV Shows</a>
+            <a href="#"><i class="fas fa-music"></i> Music</a>
+            <a href="#"><i class="fas fa-history"></i> Recent</a>
+            <a href="#"><i class="fas fa-heart"></i> Favorites</a>
+        </div>
+        
+        <div class="now-playing">
+            <img src="https://image.tmdb.org/t/p/w500/9cqNxx0GxF0bflZmeSMuL5tnGzr.jpg" alt="Now Playing" class="now-playing-poster">
+            <div class="now-playing-info">
+                <h2 class="now-playing-title">The Shawshank Redemption</h2>
+                <div class="now-playing-meta">
+                    <span><i class="fas fa-calendar-alt"></i> 1994</span>
+                    <span><i class="fas fa-clock"></i> 2h 22m</span>
+                    <span><i class="fas fa-star"></i> 9.3/10</span>
+                    <span><i class="fas fa-tag"></i> Drama</span>
+                </div>
+                <p class="now-playing-description">Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency. Chronicles the experiences of a formerly successful banker as a prisoner in the gloomy jailhouse of Shawshank.</p>
+                <div class="progress-bar">
+                    <div class="progress"></div>
+                </div>
+                <div class="player-controls">
+                    <button class="play-btn"><i class="fas fa-play"></i> Play Now</button>
+                    <button><i class="fas fa-info-circle"></i> Details</button>
+                    <button><i class="fas fa-plus"></i> Watchlist</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="categories">
+            <h3 class="category-title">Continue Watching</h3>
+            <div class="media-grid">
+                <div class="media-card">
+                    <img src="https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg" alt="The Dark Knight" class="media-poster">
+                    <div class="media-info">
+                        <div class="media-title">The Dark Knight</div>
+                        <div class="media-meta">
+                            <span>2008</span>
+                            <span class="media-rating"><i class="fas fa-star"></i> 9.0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="media-card">
+                    <img src="https://image.tmdb.org/t/p/w500/7ABsaBkO1jA2psC8Hy4IDhkID4h.jpg" alt="Inception" class="media-poster">
+                    <div class="media-info">
+                        <div class="media-title">Inception</div>
+                        <div class="media-meta">
+                            <span>2010</span>
+                            <span class="media-rating"><i class="fas fa-star"></i> 8.8</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="media-card">
+                    <img src="https://image.tmdb.org/t/p/w500/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg" alt="Pulp Fiction" class="media-poster">
+                    <div class="media-info">
+                        <div class="media-title">Pulp Fiction</div>
+                        <div class="media-meta">
+                            <span>1994</span>
+                            <span class="media-rating"><i class="fas fa-star"></i> 8.9</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="media-card">
+                    <img src="https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg" alt="Fight Club" class="media-poster">
+                    <div class="media-info">
+                        <div class="media-title">Fight Club</div>
+                        <div class="media-meta">
+                            <span>1999</span>
+                            <span class="media-rating"><i class="fas fa-star"></i> 8.8</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="media-card">
+                    <img src="https://image.tmdb.org/t/p/w500/hziiv14OpD73u9gAak4XDDfBKa2.jpg" alt="The Matrix" class="media-poster">
+                    <div class="media-info">
+                        <div class="media-title">The Matrix</div>
+                        <div class="media-meta">
+                            <span>1999</span>
+                            <span class="media-rating"><i class="fas fa-star"></i> 8.7</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="categories">
+            <h3 class="category-title">Recently Added</h3>
+            <div class="media-grid">
+                <div class="media-card">
+                    <img src="https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg" alt="Interstellar" class="media-poster">
+                    <div class="media-info">
+                        <div class="media-title">Interstellar</div>
+                        <div class="media-meta">
+                            <span>2014</span>
+                            <span class="media-rating"><i class="fas fa-star"></i> 8.6</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="media-card">
+                    <img src="https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg" alt="The Godfather" class="media-poster">
+                    <div class="media-info">
+                        <div class="media-title">The Godfather</div>
+                        <div class="media-meta">
+                            <span>1972</span>
+                            <span class="media-rating"><i class="fas fa-star"></i> 8.7</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="media-card">
+                    <img src="https://image.tmdb.org/t/p/w500/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg" alt="Parasite" class="media-poster">
+                    <div class="media-info">
+                        <div class="media-title">Parasite</div>
+                        <div class="media-meta">
+                            <span>2019</span>
+                            <span class="media-rating"><i class="fas fa-star"></i> 8.5</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="media-card">
+                    <img src="https://image.tmdb.org/t/p/w500/6FfCtAuVAW8XJjZ7eWeLibRLWTw.jpg" alt="The Shining" class="media-poster">
+                    <div class="media-info">
+                        <div class="media-title">The Shining</div>
+                        <div class="media-meta">
+                            <span>1980</span>
+                            <span class="media-rating"><i class="fas fa-star"></i> 8.4</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="media-card">
+                    <img src="https://image.tmdb.org/t/p/w500/6oom5QYQ2yQTMJIbnvbkBL9cHo6.jpg" alt="Forrest Gump" class="media-poster">
+                    <div class="media-info">
+                        <div class="media-title">Forrest Gump</div>
+                        <div class="media-meta">
+                            <span>1994</span>
+                            <span class="media-rating"><i class="fas fa-star"></i> 8.5</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p> wak.pi &copy; </p>
+        </footer>
+    </div>
+
+    <script>
+        // Simple animation triggers
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effect to media cards
+            const cards = document.querySelectorAll('.media-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-10px) scale(1.03)';
+                    this.style.boxShadow = '0 15px 30px rgba(0,0,0,0.4)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = '';
+                    this.style.boxShadow = '';
+                });
+            });
+            
+            // Simulate loading animation
+            setTimeout(() => {
+                document.querySelector('.now-playing-poster').style.transform = 'rotate(2deg) scale(1.03)';
+                setTimeout(() => {
+                    document.querySelector('.now-playing-poster').style.transform = '';
+                }, 1000);
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
